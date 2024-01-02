@@ -254,6 +254,11 @@ MonoBehaviour:
   tileSize: {x: 0.3, y: 0.4}
   tileMargin: {x: 0.1, y: 0.1}
   cameraOffset: 0.75
+  tileSprites:
+  - {fileID: 1342628146, guid: fabf2c161715d35429c64d8f11561d38, type: 3}
+  - {fileID: -601156620, guid: fabf2c161715d35429c64d8f11561d38, type: 3}
+  - {fileID: -1493942957, guid: fabf2c161715d35429c64d8f11561d38, type: 3}
+  - {fileID: 1081551906, guid: fabf2c161715d35429c64d8f11561d38, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
