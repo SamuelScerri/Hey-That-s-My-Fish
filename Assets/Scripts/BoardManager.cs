@@ -8,6 +8,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
 	public const byte ChooseAreaEvent = 1;
 	public const byte ReadyEvent = 2;
+	public const byte TileUpdateStateEvent = 3;
 
 	[SerializeField] private Vector2Int boardSize;
 	[SerializeField] private Vector2 tileSize, tileMargin;
@@ -61,6 +62,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 				if (SelectedTile.Amount == 1)
 				{
 					print("Penguins Left: " + penguinsLeft);
+					PhotonNetwork.RaiseEvent(TileUpdateStateEvent, PhotonView.Get(SelectedTile).ViewID, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 					penguinsLeft --;
 				}
 				
@@ -91,6 +93,8 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 				print("All Players Ready");
 		}
 
+		if (photonEvent.Code == TileUpdateStateEvent)
+			PhotonView.Find((int)photonEvent.CustomData).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
 	}
 
 	public override void OnPlayerLeftRoom(Player otherPlayer)

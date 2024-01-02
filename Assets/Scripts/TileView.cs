@@ -1,12 +1,10 @@
 using Photon.Pun;
 using UnityEngine;
-using UnityEngine.WSA;
-
-
 
 public class TileView : MonoBehaviour, IPunObservable
 {
 	private byte amount;
+	private State currentState;
 	private SpriteRenderer spriteRenderer;
 
 	public enum State
@@ -26,11 +24,27 @@ public class TileView : MonoBehaviour, IPunObservable
 		}
 	}
 
-	public State CurrentState { get; set; }
+	public State CurrentState
+	{
+		get => currentState;
+		set
+		{
+			currentState = value;
+
+			if (value == State.Occupied)
+				spriteRenderer.sprite = BoardManager.Board.TileSprites[0];
+		}
+	}
 
 	private void Awake()
 	{
 		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+	}
+
+	[PunRPC]
+	public void UpdateState(State state)
+	{
+		CurrentState = state;
 	}
 
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -51,9 +65,6 @@ public class TileView : MonoBehaviour, IPunObservable
 	public void OnMouseDown()
 	{
 		if (CurrentState == State.Full)
-		{
 			BoardManager.Board.SelectedTile = this;
-			CurrentState = State.Occupied;
-		}
 	}
 }
