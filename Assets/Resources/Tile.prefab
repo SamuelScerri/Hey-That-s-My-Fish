@@ -96,10 +96,11 @@ GameObject:
   - component: {fileID: 4688240696031270362}
   - component: {fileID: 6799740924214475021}
   - component: {fileID: 7503440060149517428}
+  - component: {fileID: 8809282779005446062}
   - component: {fileID: 4163053916534371288}
   m_Layer: 0
   m_Name: Tile
-  m_TagString: Untagged
+  m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -189,10 +190,27 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
+  - {fileID: 8809282779005446062}
   - {fileID: 4163053916534371288}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &8809282779005446062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7686744250589535610}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters: []
+  m_SynchronizeLayers: []
 --- !u!114 &4163053916534371288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -205,4 +223,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eff01a62829e3ab49b8f325f93f56f0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amount: 0

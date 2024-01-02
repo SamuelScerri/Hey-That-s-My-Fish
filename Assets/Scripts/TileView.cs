@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class TileView : MonoBehaviour, IPunObservable
 {
-	[SerializeField]
 	private byte amount;
 	private SpriteRenderer spriteRenderer;
 
