@@ -7,6 +7,7 @@ using UnityEngine;
 public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
 	public const byte ChooseAreaEvent = 1;
+	public const byte ReadyEvent = 2;
 
 	[SerializeField] private Vector2Int boardSize;
 	[SerializeField] private Vector2 tileSize, tileMargin;
@@ -17,7 +18,9 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 	public static BoardManager Board { get; set; }
 	public Sprite[] TileSprites { get => tileSprites; }
 
+	public TileView SelectedTile { get; set; }
 
+	private byte playersReady = 0;
 
 	private void Awake()
 	{
@@ -53,8 +56,21 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 		while (penguinsLeft > 0)
 		{
+			if (SelectedTile)
+			{
+				if (SelectedTile.Amount == 1)
+				{
+					print("Penguins Left: " + penguinsLeft);
+					penguinsLeft --;
+				}
+				
+				SelectedTile = null;
+			}
+
 			yield return new WaitForEndOfFrame();
 		}
+
+		PhotonNetwork.RaiseEvent(ReadyEvent, null, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 
 		yield return null;
 	}
@@ -66,6 +82,15 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			print("Please Choose Tiles");
 			StartCoroutine(ChooseAreaCoroutine());
 		}
+
+		if (photonEvent.Code == ReadyEvent)
+		{
+			playersReady ++;
+
+			if (playersReady == 2)
+				print("All Players Ready");
+		}
+
 	}
 
 	public override void OnPlayerLeftRoom(Player otherPlayer)

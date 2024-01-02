@@ -1,5 +1,6 @@
 using Photon.Pun;
 using UnityEngine;
+using UnityEngine.WSA;
 
 
 
@@ -44,6 +45,15 @@ public class TileView : MonoBehaviour, IPunObservable
 		{
 			Amount = (byte)stream.ReceiveNext();
 			CurrentState = (State)stream.ReceiveNext();
+		}
+	}
+
+	public void OnMouseDown()
+	{
+		if (CurrentState == State.Full)
+		{
+			BoardManager.Board.SelectedTile = this;
+			CurrentState = State.Occupied;
 		}
 	}
 }
