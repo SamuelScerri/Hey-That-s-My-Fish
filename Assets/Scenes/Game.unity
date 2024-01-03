@@ -149,12 +149,11 @@ Transform:
   m_GameObject: {fileID: 1100803077}
   serializedVersion: 2
   m_LocalRotation: {x: 0.3535534, y: 0.61237246, z: -0.3535534, w: 0.61237246}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -2, y: 3.75, z: 0}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 1594663787}
-  m_Father: {fileID: 0}
+  m_Children: []
+  m_Father: {fileID: 1594663787}
   m_LocalEulerAnglesHint: {x: 60, y: 90, z: 0}
 --- !u!20 &1100803079
 Camera:
@@ -219,7 +218,7 @@ GameObject:
   - component: {fileID: 1594663786}
   - component: {fileID: 1594663785}
   m_Layer: 0
-  m_Name: Plane
+  m_Name: Ocean
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -283,12 +282,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1594663783}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.3535534, y: -0.61237246, z: 0.3535534, w: 0.61237246}
-  m_LocalPosition: {x: 0, y: -0.125, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.125, z: -0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1100803078}
+  m_Children:
+  - {fileID: 1100803078}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1635267157
 GameObject:
@@ -337,7 +337,7 @@ MonoBehaviour:
   boardSize: {x: 8, y: 8}
   tileSize: {x: 0.3, y: 0.4}
   tileMargin: {x: 0.1, y: 0.1}
-  cameraOffset: 0.75
+  cameraOffset: 0.25
   tileSprites:
   - {fileID: 1342628146, guid: fabf2c161715d35429c64d8f11561d38, type: 3}
   - {fileID: -601156620, guid: fabf2c161715d35429c64d8f11561d38, type: 3}
@@ -348,4 +348,4 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1635267158}
-  - {fileID: 1100803078}
+  - {fileID: 1594663787}

@@ -33,7 +33,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 	private void Start()
 	{
-		Camera.main.transform.position = new Vector3(boardSize.x * (tileSize.x + tileMargin.x) / 2 - cameraOffset, Camera.main.transform.position.y, boardSize.y * (tileSize.y + tileMargin.y) / 2);	
+		Camera.main.transform.parent.position = new Vector3(boardSize.x * (tileSize.x + tileMargin.x) / 2 - cameraOffset, Camera.main.transform.parent.position.y, boardSize.y * (tileSize.y + tileMargin.y) / 2);	
 	}
 
 	private IEnumerator InitializeBoard()
@@ -55,10 +55,16 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 	private void SpawnPenguin(TileView tile)
 	{
+		GameObject newPenguin;
+
 		if (PhotonNetwork.IsMasterClient)
-			PhotonNetwork.Instantiate("Penguin Blue", tile.transform.position, Quaternion.identity);
+			newPenguin = PhotonNetwork.Instantiate("Penguin Blue", tile.transform.position, Quaternion.identity);
 		else
-			PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity);
+			newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity);
+	
+		newPenguin.transform.SetParent(tile.transform);
+		newPenguin.transform.localPosition = Vector3.up * .1f;
+		newPenguin.transform.localEulerAngles = Vector3.zero;
 	}
 
 	private IEnumerator ChooseAreaCoroutine()
