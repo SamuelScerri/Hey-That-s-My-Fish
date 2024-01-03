@@ -61,10 +61,8 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			newPenguin = PhotonNetwork.Instantiate("Penguin Blue", tile.transform.position, Quaternion.identity);
 		else
 			newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity);
-	
-		newPenguin.transform.SetParent(tile.transform);
-		newPenguin.transform.localPosition = Vector3.up * .1f;
-		newPenguin.transform.localEulerAngles = Vector3.zero;
+
+		newPenguin.GetComponent<ParentView>().ParentID = PhotonView.Get(tile).ViewID;
 	}
 
 	private IEnumerator ChooseAreaCoroutine()
