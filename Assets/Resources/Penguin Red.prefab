@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2190184699818350852, guid: 410142443e1570a428f6c6d1ae51b8a2, type: 3}
       propertyPath: m_Name
-      value: Penguin Red Variant
+      value: Penguin Red
       objectReference: {fileID: 0}
     - target: {fileID: 2190184699818444068, guid: 410142443e1570a428f6c6d1ae51b8a2, type: 3}
       propertyPath: m_LocalPosition.x

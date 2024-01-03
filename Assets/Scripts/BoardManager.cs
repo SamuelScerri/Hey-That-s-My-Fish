@@ -44,11 +44,21 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 				TileView tile = PhotonNetwork.Instantiate("Tile", new Vector3(x * (tileSize.x + tileMargin.x), 0, y * (tileSize.y + tileMargin.y) + (x % 2 == 0 ? (tileSize.y + tileMargin.y) / 2 : 0)), Quaternion.identity).GetComponent<TileView>();
 				tile.Amount = (byte)Random.Range(1, 4);
 				tile.CurrentState = TileView.State.Full;
+
+				yield return new WaitForSeconds(.015625f);
 			}
 
 		PhotonNetwork.RaiseEvent(ChooseAreaEvent, null, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 
 		yield return null;
+	}
+
+	private void SpawnPenguin(TileView tile)
+	{
+		if (PhotonNetwork.IsMasterClient)
+			PhotonNetwork.Instantiate("Penguin Blue", tile.transform.position, Quaternion.identity);
+		else
+			PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity);
 	}
 
 	private IEnumerator ChooseAreaCoroutine()
@@ -63,6 +73,8 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 				{
 					print("Penguins Left: " + penguinsLeft);
 					PhotonNetwork.RaiseEvent(TileUpdateStateEvent, PhotonView.Get(SelectedTile).ViewID, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+					SpawnPenguin(SelectedTile);
+					
 					penguinsLeft --;
 				}
 				
