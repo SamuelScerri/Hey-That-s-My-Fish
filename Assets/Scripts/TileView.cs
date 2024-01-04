@@ -32,8 +32,9 @@ public class TileView : MonoBehaviour, IPunObservable
 		{
 			currentState = value;
 
-			if (value == State.Occupied)
-				spriteRenderer.sprite =  Singleton.BoardManager.TileSprites[0];
+			if (value == State.Empty)
+				PhotonNetwork.Destroy(PhotonView.Get(this));
+			//	spriteRenderer.sprite =  Singleton.BoardManager.TileSprites[0];
 		}
 	}
 

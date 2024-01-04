@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Hey-That-s-My-Fish.sln"
+    "dotnet.defaultSolution": "Hey That's My Fish.sln"
 }

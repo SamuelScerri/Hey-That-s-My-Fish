@@ -45,14 +45,16 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 	private void SpawnPenguin(TileView tile)
 	{
-		GameObject newPenguin;
+		Penguin newPenguin;
 
 		if (PhotonNetwork.IsMasterClient)
-			newPenguin = PhotonNetwork.Instantiate("Penguin Blue", tile.transform.position, Quaternion.identity);
+			newPenguin = PhotonNetwork.Instantiate("Penguin Blue", tile.transform.position, Quaternion.identity).GetComponent<Penguin>();
 		else
-			newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity);
+			newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity).GetComponent<Penguin>();
 
-		newPenguin.GetComponent<ParentView>().ParentID = PhotonView.Get(tile).ViewID;
+		//newPenguin.GetComponent<ParentView>().ParentID = PhotonView.Get(tile).ViewID;
+		newPenguin.CurrentTile = PhotonView.Get(tile).ViewID;
+
 		Singleton.GameManager.ClientPenguins.Add(newPenguin.GetComponent<Penguin>());
 	}
 
@@ -67,7 +69,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 				if (SelectedTile.Amount == 1)
 				{
 					print("Penguins Left: " + penguinsLeft);
-					PhotonNetwork.RaiseEvent(Singleton.TileUpdateStateEvent, PhotonView.Get(SelectedTile).ViewID, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+					
 					SpawnPenguin(SelectedTile);
 					
 					penguinsLeft --;
@@ -107,14 +109,18 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			}
 		}
 
-		if (photonEvent.Code == Singleton.TileUpdateStateEvent)
-			if (PhotonNetwork.IsMasterClient)
-				PhotonView.Find((int)photonEvent.CustomData).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
+		//if (photonEvent.Code == Singleton.TileUpdateStateEvent)
+		//	if (PhotonNetwork.IsMasterClient)
+		//		PhotonView.Find((int)photonEvent.CustomData).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
 			
 	
 		if (photonEvent.Code == Singleton.SwitchPlayerEvent)
 		{
-			Singleton.GameManager.CurrentPlayerID = (byte) photonEvent.CustomData;
+			if ((byte) photonEvent.CustomData > PhotonNetwork.PlayerList.Length)
+				Singleton.GameManager.CurrentPlayerID = 1;
+			else
+				Singleton.GameManager.CurrentPlayerID = (byte) photonEvent.CustomData;
+
 			stateDebugger.SetText("Player's Turn: " + Singleton.GameManager.CurrentPlayerID);
 
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.LocalPlayer.ActorNumber)
