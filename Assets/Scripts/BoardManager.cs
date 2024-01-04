@@ -1,35 +1,25 @@
+
 using System.Collections;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using TMPro;
 using UnityEngine;
 
 public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
-	public const byte ChooseAreaEvent = 1;
-	public const byte ReadyEvent = 2;
-	public const byte TileUpdateStateEvent = 3;
-
 	[SerializeField] private Vector2Int boardSize;
 	[SerializeField] private Vector2 tileSize, tileMargin;
 	[SerializeField] private float cameraOffset;
 
 	[SerializeField] private Sprite[] tileSprites;
 
-	public static BoardManager Board { get; set; }
+	[SerializeField] private TextMeshProUGUI stateDebugger;
+
+	
 	public Sprite[] TileSprites { get => tileSprites; }
 
 	public TileView SelectedTile { get; set; }
-
-	private byte playersReady = 0;
-
-	private void Awake()
-	{
-		if (Board == null)
-			Board = this;
-		else
-			Destroy(this.gameObject);
-	}
 
 	private void Start()
 	{
@@ -48,7 +38,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 				yield return new WaitForSeconds(.015625f);
 			}
 
-		PhotonNetwork.RaiseEvent(ChooseAreaEvent, null, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+		PhotonNetwork.RaiseEvent(Singleton.ChooseAreaEvent, null, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 
 		yield return null;
 	}
@@ -63,6 +53,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity);
 
 		newPenguin.GetComponent<ParentView>().ParentID = PhotonView.Get(tile).ViewID;
+		Singleton.GameManager.ClientPenguins.Add(newPenguin.GetComponent<Penguin>());
 	}
 
 	private IEnumerator ChooseAreaCoroutine()
@@ -76,7 +67,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 				if (SelectedTile.Amount == 1)
 				{
 					print("Penguins Left: " + penguinsLeft);
-					PhotonNetwork.RaiseEvent(TileUpdateStateEvent, PhotonView.Get(SelectedTile).ViewID, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+					PhotonNetwork.RaiseEvent(Singleton.TileUpdateStateEvent, PhotonView.Get(SelectedTile).ViewID, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 					SpawnPenguin(SelectedTile);
 					
 					penguinsLeft --;
@@ -88,29 +79,48 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			yield return new WaitForEndOfFrame();
 		}
 
-		PhotonNetwork.RaiseEvent(ReadyEvent, null, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+		PhotonNetwork.RaiseEvent(Singleton.ReadyEvent, null, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 
 		yield return null;
 	}
 
 	public void OnEvent(EventData photonEvent)
 	{
-		if (photonEvent.Code == ChooseAreaEvent)
+		if (photonEvent.Code == Singleton.ChooseAreaEvent)
 		{
 			print("Please Choose Tiles");
+			stateDebugger.SetText("Set Penguin Pawns");
+
 			StartCoroutine(ChooseAreaCoroutine());
 		}
 
-		if (photonEvent.Code == ReadyEvent)
+		if (photonEvent.Code == Singleton.ReadyEvent)
 		{
-			playersReady ++;
+			Singleton.GameManager.CurrentPlayerID ++;
 
-			if (playersReady == 2)
-				print("All Players Ready");
+			stateDebugger.SetText("Waiting For Other Player");
+
+			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.PlayerList.Length)
+			{
+				stateDebugger.SetText("Penguin Pawns Ready");
+				PhotonNetwork.RaiseEvent(Singleton.SwitchPlayerEvent, (byte) 1, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+			}
 		}
 
-		if (photonEvent.Code == TileUpdateStateEvent)
-			PhotonView.Find((int)photonEvent.CustomData).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
+		if (photonEvent.Code == Singleton.TileUpdateStateEvent)
+			if (PhotonNetwork.IsMasterClient)
+				PhotonView.Find((int)photonEvent.CustomData).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
+			
+	
+		if (photonEvent.Code == Singleton.SwitchPlayerEvent)
+		{
+			Singleton.GameManager.CurrentPlayerID = (byte) photonEvent.CustomData;
+			stateDebugger.SetText("Player's Turn: " + Singleton.GameManager.CurrentPlayerID);
+
+			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.LocalPlayer.ActorNumber)
+				foreach(Penguin penguin in Singleton.GameManager.ClientPenguins)
+					penguin.Controllable = true;
+		}
 	}
 
 	public override void OnPlayerLeftRoom(Player otherPlayer)

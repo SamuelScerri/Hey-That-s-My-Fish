@@ -21,7 +21,7 @@ public class TileView : MonoBehaviour, IPunObservable
 		set
 		{
 			amount = value;
-			spriteRenderer.sprite = BoardManager.Board.TileSprites[value];
+			spriteRenderer.sprite = Singleton.BoardManager.TileSprites[value];
 		}
 	}
 
@@ -33,7 +33,7 @@ public class TileView : MonoBehaviour, IPunObservable
 			currentState = value;
 
 			if (value == State.Occupied)
-				spriteRenderer.sprite = BoardManager.Board.TileSprites[0];
+				spriteRenderer.sprite =  Singleton.BoardManager.TileSprites[0];
 		}
 	}
 
@@ -74,6 +74,6 @@ public class TileView : MonoBehaviour, IPunObservable
 	public void OnMouseDown()
 	{
 		if (CurrentState == State.Full)
-			BoardManager.Board.SelectedTile = this;
+			Singleton.BoardManager.SelectedTile = this;
 	}
 }
