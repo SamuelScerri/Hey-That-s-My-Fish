@@ -12,6 +12,11 @@ public class Penguin : MonoBehaviour
 	[PunRPC]
 	public void JumpToTile(int tileID)
 	{
+		transform.SetParent(PhotonView.Find(tileID).transform);
+		transform.localPosition = Vector3.up * .1f;
+
+		transform.localEulerAngles = Vector3.down * 90;
+
 		if (PhotonNetwork.IsMasterClient)
 		{
 			if (CurrentTile != 0)
@@ -20,11 +25,6 @@ public class Penguin : MonoBehaviour
 		}
 
 		currentTile = tileID;
-
-		transform.SetParent(PhotonView.Find(currentTile).transform);
-		transform.localPosition = Vector3.up * .1f;
-
-		transform.localEulerAngles = Vector3.down * 90;
 	}
 
 	public int CurrentTile
