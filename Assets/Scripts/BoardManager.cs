@@ -11,20 +11,18 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 	[SerializeField] private Vector2Int boardSize;
 	[SerializeField] private Vector2 tileSize, tileMargin;
 	[SerializeField] private float cameraOffset;
-
 	[SerializeField] private Sprite[] tileSprites;
-
 	[SerializeField] private TextMeshProUGUI stateDebugger;
 
 	public Sprite[] TileSprites { get => tileSprites; }
-
 	public TileView SelectedTile { get; set; }
-
-	public List<TileView> AllTiles { get; set; }
+	public TileView[] AllTiles { get; set; }
+	public Vector2Int BoardSize { get => boardSize; }
+	public Vector2 TileSize { get => tileSize; }
+	public Vector2 TileMargin { get => tileMargin; }
 
 	private void Start()
 	{
-		AllTiles = new List<TileView>();
 		Camera.main.transform.parent.position = new Vector3(boardSize.x * (tileSize.x + tileMargin.x) / 2 - cameraOffset, Camera.main.transform.parent.position.y, boardSize.y * (tileSize.y + tileMargin.y) / 2);	
 	}
 
@@ -40,7 +38,8 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 					tile.CurrentState = TileView.State.Active;
 				else tile.CurrentState = TileView.State.Inactive;
 
-				AllTiles.Add(tile);
+				PhotonView.Get(tile).RPC("SetState", RpcTarget.All, tile.CurrentState);
+				PhotonView.Get(tile).RPC("SetAmount", RpcTarget.All, tile.Amount);
 
 				yield return new WaitForSeconds(.015625f);
 			}
@@ -88,6 +87,13 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 		yield return null;
 	}
 
+	public void ResetTiles()
+	{
+		foreach(TileView tile in AllTiles)
+			if (tile.CurrentState == TileView.State.Active)
+				tile.CurrentState = TileView.State.Inactive;
+	}
+
 	public void OnEvent(EventData photonEvent)
 	{
 		if (photonEvent.Code == Singleton.ChooseAreaEvent)
@@ -103,9 +109,11 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.PlayerList.Length)
 			{
+				AllTiles = GameObject.FindObjectsOfType<TileView>();
+
 				foreach(TileView tile in AllTiles)
 					if (tile.CurrentState == TileView.State.Active)
-						tile.CurrentState = TileView.State.Inactive;
+						PhotonView.Get(tile).RPC("SetState", RpcTarget.All, TileView.State.Inactive);
 
 				stateDebugger.SetText("Penguin Pawns Ready");
 				Singleton.GameManager.Scores = new int[PhotonNetwork.PlayerList.Length];

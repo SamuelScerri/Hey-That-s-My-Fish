@@ -47,6 +47,8 @@ MonoBehaviour:
   - SetTime
   - UpdateState
   - JumpToTile
+  - SetAmount
+  - SetState
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

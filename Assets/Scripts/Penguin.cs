@@ -2,6 +2,7 @@ using System.Collections;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using UnityEditorInternal;
 using UnityEngine;
 
 public class Penguin : MonoBehaviour
@@ -31,7 +32,7 @@ public class Penguin : MonoBehaviour
 			StartCoroutine(PhotonView.Find(CurrentTile).GetComponent<TileView>().MoveToScoreHolder((byte) PhotonView.Get(this).OwnerActorNr));
 
 		if (PhotonNetwork.IsMasterClient)
-			PhotonView.Find(tileID).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
+			PhotonView.Find(tileID).RPC("SetState", RpcTarget.All, TileView.State.Occupied);
 
 		currentTile = tileID;
 	}
@@ -65,7 +66,7 @@ public class Penguin : MonoBehaviour
 				break;
 			}
 
-			else if (Input.GetKeyDown(KeyCode.Space))
+			if (Input.GetKeyDown(KeyCode.Space))
 			{
 				foreach (Penguin penguin in Singleton.GameManager.ClientPenguins)
 					penguin.Controllable = true;
@@ -76,6 +77,7 @@ public class Penguin : MonoBehaviour
 			else yield return new WaitForEndOfFrame();
 		}
 
+		Singleton.BoardManager.ResetTiles();
 		print("End Control Penguin Coroutine");
 	}
 

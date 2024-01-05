@@ -1,8 +1,9 @@
 using System.Collections;
+using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 
-public class TileView : MonoBehaviour, IPunObservable
+public class TileView : MonoBehaviour
 {
 	private byte amount;
 	private State currentState;
@@ -43,6 +44,18 @@ public class TileView : MonoBehaviour, IPunObservable
 				spriteRenderer.color = Color.white;
 			}
 		}
+	}
+
+	[PunRPC]
+	public void SetState(State state)
+	{
+		CurrentState = state;
+	}
+
+	[PunRPC]
+	public void SetAmount(byte amount)
+	{
+		Amount = amount;
 	}
 
 	public State CurrentState
@@ -108,24 +121,17 @@ public class TileView : MonoBehaviour, IPunObservable
 		coroutine = StartCoroutine(FloatAnimation());
 	}
 
-	public void ShowAvailableTiles()
+	private void ShowHorizontalTiles()
 	{
-		//Physics.Raycast(transform.position, )
+			foreach(TileView tile in Singleton.BoardManager.AllTiles)
+			{
+				tile.CurrentState = State.Active;
+			}
 	}
 
-	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	public void ShowAvailableTiles()
 	{
-		if (stream.IsWriting)
-		{
-			stream.SendNext(Amount);
-			stream.SendNext(CurrentState);
-		}
-			
-		else if (stream.IsReading)
-		{
-			Amount = (byte)stream.ReceiveNext();
-			CurrentState = (State)stream.ReceiveNext();
-		}
+		ShowHorizontalTiles();
 	}
 
 	public void OnMouseDown()
