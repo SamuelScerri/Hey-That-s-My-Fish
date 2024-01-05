@@ -1,3 +1,4 @@
+using System.Collections;
 using Photon.Pun;
 using UnityEngine;
 
@@ -6,7 +7,8 @@ public class TileView : MonoBehaviour, IPunObservable
 	private byte amount;
 	private State currentState;
 	private SpriteRenderer spriteRenderer;
-	private float bobbing;
+
+	private Coroutine coroutine;
 
 	public enum State
 	{
@@ -33,27 +35,58 @@ public class TileView : MonoBehaviour, IPunObservable
 			currentState = value;
 
 			if (value == State.Empty)
-				PhotonNetwork.Destroy(PhotonView.Get(this));
+			{
+				//;
+				//StartCoroutine(MoveToScoreHolder(GameManager));
+			}
+				//PhotonNetwork.Destroy(PhotonView.Get(this));
+		}
+	}
+
+	public IEnumerator FloatAnimation()
+	{
+		float bobbing = Random.Range(0, 255);
+
+		while (true)
+		{
+			bobbing += Time.deltaTime;
+			transform.position = new Vector3(transform.position.x, Mathf.Sin(bobbing) * .03125f, transform.position.z);
+			transform.localEulerAngles = new Vector3(Mathf.Sin(bobbing) * 3.75f, 0,  -Mathf.Sin(bobbing * .5f) * 3.75f);
+
+			yield return new WaitForEndOfFrame();
+		}
+	}
+
+	public IEnumerator MoveToScoreHolder(byte id)
+	{
+		//Transform sprite = transform.GetChild(0);
+		//sprite.SetParent(null);
+
+		StopCoroutine(coroutine);
+
+		transform.SetParent(Singleton.GameManager.ScoreHolders[id - 1].transform);
+		transform.localEulerAngles = Vector3.zero;
+
+		Vector3 currentVelocity = Vector3.zero;
+
+		int yOffset = Singleton.GameManager.ScoreHolders[id - 1].transform.childCount;
+
+		while (true)
+		{
+			transform.localPosition = Vector3.SmoothDamp(transform.localPosition, Vector3.up * yOffset * .125f, ref currentVelocity, .125f);
+
+			yield return new WaitForEndOfFrame();
 		}
 	}
 
 	private void Awake()
 	{
 		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-		bobbing = Random.Range(0, 255);
 	}
 
-	[PunRPC]
-	public void UpdateState(State state)
+	private void Start()
 	{
-		CurrentState = state;
-	}
-
-	private void Update()
-	{
-		bobbing += Time.deltaTime;
-		transform.position = new Vector3(transform.position.x, Mathf.Sin(bobbing) * .03125f, transform.position.z);
-		transform.localEulerAngles = new Vector3(Mathf.Sin(bobbing) * 3.75f, 0,  -Mathf.Sin(bobbing * .5f) * 3.75f);
+		coroutine = StartCoroutine(FloatAnimation());
 	}
 
 	public void ShowAvailableTiles()

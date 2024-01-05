@@ -17,11 +17,14 @@ public class Penguin : MonoBehaviour
 
 		transform.localEulerAngles = Vector3.down * 90;
 
+		if (CurrentTile != 0)
+			StartCoroutine(PhotonView.Find(currentTile).GetComponent<TileView>().MoveToScoreHolder((byte) PhotonView.Get(this).OwnerActorNr));
+
 		if (PhotonNetwork.IsMasterClient)
 		{
 			if (CurrentTile != 0)
 				PhotonView.Find(CurrentTile).GetComponent<TileView>().CurrentState = TileView.State.Empty;
-			PhotonView.Find(tileID).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
+			else PhotonView.Find(tileID).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
 		}
 
 		currentTile = tileID;

@@ -4,11 +4,11 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
 	public byte CurrentPlayerID { get; set; }
-
-	public static BoardManager Board { get; set; }
-	public static GameManager Game { get; set; }
-
 	public List<Penguin> ClientPenguins { get; set; }
+	public int[] Scores { get; set; }
+
+	[SerializeField] private GameObject[] scoreHolders;
+	public GameObject[] ScoreHolders { get => scoreHolders; }
 
 	private void Start()
 	{

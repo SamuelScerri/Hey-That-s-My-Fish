@@ -1,5 +1,5 @@
-
 using System.Collections;
+using System.Collections.Generic;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
@@ -16,7 +16,6 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 	[SerializeField] private TextMeshProUGUI stateDebugger;
 
-	
 	public Sprite[] TileSprites { get => tileSprites; }
 
 	public TileView SelectedTile { get; set; }
@@ -49,10 +48,8 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 		if (PhotonNetwork.IsMasterClient)
 			newPenguin = PhotonNetwork.Instantiate("Penguin Blue", tile.transform.position, Quaternion.identity).GetComponent<Penguin>();
-		else
-			newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity).GetComponent<Penguin>();
+		else newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity).GetComponent<Penguin>();
 
-		//newPenguin.GetComponent<ParentView>().ParentID = PhotonView.Get(tile).ViewID;
 		newPenguin.CurrentTile = PhotonView.Get(tile).ViewID;
 
 		Singleton.GameManager.ClientPenguins.Add(newPenguin.GetComponent<Penguin>());
@@ -68,10 +65,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			{
 				if (SelectedTile.Amount == 1)
 				{
-					print("Penguins Left: " + penguinsLeft);
-					
-					SpawnPenguin(SelectedTile);
-					
+					SpawnPenguin(SelectedTile);	
 					penguinsLeft --;
 				}
 				
@@ -90,36 +84,30 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 	{
 		if (photonEvent.Code == Singleton.ChooseAreaEvent)
 		{
-			print("Please Choose Tiles");
 			stateDebugger.SetText("Set Penguin Pawns");
-
 			StartCoroutine(ChooseAreaCoroutine());
 		}
 
 		if (photonEvent.Code == Singleton.ReadyEvent)
 		{
 			Singleton.GameManager.CurrentPlayerID ++;
-
 			stateDebugger.SetText("Waiting For Other Player");
 
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.PlayerList.Length)
 			{
 				stateDebugger.SetText("Penguin Pawns Ready");
+				Singleton.GameManager.Scores = new int[PhotonNetwork.PlayerList.Length];
+				print("Allocated Score List With Capacity: " + Singleton.GameManager.Scores.Length);
+
 				PhotonNetwork.RaiseEvent(Singleton.SwitchPlayerEvent, (byte) 1, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 			}
 		}
-
-		//if (photonEvent.Code == Singleton.TileUpdateStateEvent)
-		//	if (PhotonNetwork.IsMasterClient)
-		//		PhotonView.Find((int)photonEvent.CustomData).GetComponent<TileView>().CurrentState = TileView.State.Occupied;
-			
 	
 		if (photonEvent.Code == Singleton.SwitchPlayerEvent)
 		{
 			if ((byte) photonEvent.CustomData > PhotonNetwork.PlayerList.Length)
 				Singleton.GameManager.CurrentPlayerID = 1;
-			else
-				Singleton.GameManager.CurrentPlayerID = (byte) photonEvent.CustomData;
+			else Singleton.GameManager.CurrentPlayerID = (byte) photonEvent.CustomData;
 
 			stateDebugger.SetText("Player's Turn: " + Singleton.GameManager.CurrentPlayerID);
 
