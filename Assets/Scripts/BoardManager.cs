@@ -20,8 +20,11 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 	public TileView SelectedTile { get; set; }
 
+	public List<TileView> AllTiles { get; set; }
+
 	private void Start()
 	{
+		AllTiles = new List<TileView>();
 		Camera.main.transform.parent.position = new Vector3(boardSize.x * (tileSize.x + tileMargin.x) / 2 - cameraOffset, Camera.main.transform.parent.position.y, boardSize.y * (tileSize.y + tileMargin.y) / 2);	
 	}
 
@@ -32,7 +35,12 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			{
 				TileView tile = PhotonNetwork.Instantiate("Tile", new Vector3(x * (tileSize.x + tileMargin.x), 0, y * (tileSize.y + tileMargin.y) + (x % 2 == 0 ? (tileSize.y + tileMargin.y) / 2 : 0)), Quaternion.identity).GetComponent<TileView>();
 				tile.Amount = (byte)Random.Range(1, 4);
-				tile.CurrentState = TileView.State.Full;
+
+				if (tile.Amount == 1)
+					tile.CurrentState = TileView.State.Active;
+				else tile.CurrentState = TileView.State.Inactive;
+
+				AllTiles.Add(tile);
 
 				yield return new WaitForSeconds(.015625f);
 			}
@@ -95,6 +103,10 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.PlayerList.Length)
 			{
+				foreach(TileView tile in AllTiles)
+					if (tile.CurrentState == TileView.State.Active)
+						tile.CurrentState = TileView.State.Inactive;
+
 				stateDebugger.SetText("Penguin Pawns Ready");
 				Singleton.GameManager.Scores = new int[PhotonNetwork.PlayerList.Length];
 				print("Allocated Score List With Capacity: " + Singleton.GameManager.Scores.Length);

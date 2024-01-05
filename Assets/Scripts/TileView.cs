@@ -12,9 +12,9 @@ public class TileView : MonoBehaviour, IPunObservable
 
 	public enum State
 	{
-		Empty,
+		Active,
+		Inactive,
 		Occupied,
-		Full,
 	}
 
 	public byte Amount
@@ -27,19 +27,42 @@ public class TileView : MonoBehaviour, IPunObservable
 		}
 	}
 
+	public bool Highlight
+	{
+		set
+		{
+			if (value)
+			{
+				GetComponent<MeshRenderer>().material.color = Color.green;
+				spriteRenderer.color = Color.green;
+			}
+
+			else
+			{
+				GetComponent<MeshRenderer>().material.color = Color.white;
+				spriteRenderer.color = Color.white;
+			}
+		}
+	}
+
 	public State CurrentState
 	{
 		get => currentState;
 		set
 		{
-			currentState = value;
-
-			if (value == State.Empty)
+			if (value == State.Active)
 			{
-				//;
-				//StartCoroutine(MoveToScoreHolder(GameManager));
+				GetComponent<MeshRenderer>().material.color = Color.green;
+				spriteRenderer.color = Color.green;
 			}
-				//PhotonNetwork.Destroy(PhotonView.Get(this));
+
+			else
+			{
+				GetComponent<MeshRenderer>().material.color = Color.white;
+				spriteRenderer.color = Color.white;
+			}
+
+			currentState = value;
 		}
 	}
 
@@ -59,9 +82,6 @@ public class TileView : MonoBehaviour, IPunObservable
 
 	public IEnumerator MoveToScoreHolder(byte id)
 	{
-		//Transform sprite = transform.GetChild(0);
-		//sprite.SetParent(null);
-
 		StopCoroutine(coroutine);
 
 		transform.SetParent(Singleton.GameManager.ScoreHolders[id - 1].transform);
@@ -74,7 +94,6 @@ public class TileView : MonoBehaviour, IPunObservable
 		while (true)
 		{
 			transform.localPosition = Vector3.SmoothDamp(transform.localPosition, Vector3.up * yOffset * .125f, ref currentVelocity, .125f);
-
 			yield return new WaitForEndOfFrame();
 		}
 	}
@@ -111,7 +130,24 @@ public class TileView : MonoBehaviour, IPunObservable
 
 	public void OnMouseDown()
 	{
-		if (CurrentState == State.Full)
+		if (CurrentState == State.Active)
 			Singleton.BoardManager.SelectedTile = this;
+	}
+
+	public void OnMouseEnter()
+	{
+		//Highlight = (CurrentState == State.Active) ? true : false;
+
+		if (CurrentState == State.Active)
+		{
+			GetComponent<MeshRenderer>().material.color = Color.red;
+			spriteRenderer.color = Color.red;
+		}
+	}
+
+	public void OnMouseExit()
+	{
+		if (CurrentState == State.Active)
+			CurrentState = State.Active;
 	}
 }
