@@ -56,6 +56,11 @@ public class TileView : MonoBehaviour, IPunObservable
 		transform.localEulerAngles = new Vector3(Mathf.Sin(bobbing) * 3.75f, 0,  -Mathf.Sin(bobbing * .5f) * 3.75f);
 	}
 
+	public void ShowAvailableTiles()
+	{
+		//Physics.Raycast(transform.position, )
+	}
+
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if (stream.IsWriting)

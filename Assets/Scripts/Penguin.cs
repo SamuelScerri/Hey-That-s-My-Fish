@@ -42,6 +42,8 @@ public class Penguin : MonoBehaviour
 
 		Singleton.BoardManager.SelectedTile = null;
 
+		PhotonView.Find(CurrentTile).GetComponent<TileView>().ShowAvailableTiles();
+
 		while (true)
 		{
 			if (Singleton.BoardManager.SelectedTile)
