@@ -20,10 +20,12 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 	public Vector2Int BoardSize { get => boardSize; }
 	public Vector2 TileSize { get => tileSize; }
 	public Vector2 TileMargin { get => tileMargin; }
+	public TileView [,] TileIndexes { get; set; }
 
 	private void Start()
 	{
 		Camera.main.transform.parent.position = new Vector3(boardSize.x * (tileSize.x + tileMargin.x) / 2 - cameraOffset, Camera.main.transform.parent.position.y, boardSize.y * (tileSize.y + tileMargin.y) / 2);	
+		TileIndexes = new TileView[boardSize.x, boardSize.y];
 	}
 
 	private IEnumerator InitializeBoard()
@@ -40,6 +42,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 				PhotonView.Get(tile).RPC("SetState", RpcTarget.All, tile.CurrentState);
 				PhotonView.Get(tile).RPC("SetAmount", RpcTarget.All, tile.Amount);
+				PhotonNetwork.RaiseEvent(Singleton.SetTileIndex, new object[] { PhotonView.Get(tile).ViewID, x, y }, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 
 				yield return new WaitForSeconds(.015625f);
 			}
@@ -82,6 +85,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			yield return new WaitForEndOfFrame();
 		}
 
+		ResetTiles();
 		PhotonNetwork.RaiseEvent(Singleton.ReadyEvent, null, new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 
 		yield return null;
@@ -89,9 +93,11 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 	public void ResetTiles()
 	{
-		foreach(TileView tile in AllTiles)
-			if (tile.CurrentState == TileView.State.Active)
-				tile.CurrentState = TileView.State.Inactive;
+		for (byte x = 0; x < boardSize.x; x++)
+			for (byte y = (byte)(x % 2 == 0 ? 0 : 1); y < boardSize.y; y++)
+				if (TileIndexes[x, y] != null)
+					if (TileIndexes[x, y].CurrentState == TileView.State.Active)
+						TileIndexes[x, y].CurrentState = TileView.State.Inactive;
 	}
 
 	public void OnEvent(EventData photonEvent)
@@ -109,11 +115,11 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.PlayerList.Length)
 			{
-				AllTiles = GameObject.FindObjectsOfType<TileView>();
+				AllTiles = FindObjectsOfType<TileView>();
 
-				foreach(TileView tile in AllTiles)
-					if (tile.CurrentState == TileView.State.Active)
-						PhotonView.Get(tile).RPC("SetState", RpcTarget.All, TileView.State.Inactive);
+				//foreach(TileView tile in AllTiles)
+				//	if (tile.CurrentState == TileView.State.Active)
+				//		PhotonView.Get(tile).RPC("SetState", RpcTarget.All, TileView.State.Inactive);
 
 				stateDebugger.SetText("Penguin Pawns Ready");
 				Singleton.GameManager.Scores = new int[PhotonNetwork.PlayerList.Length];
@@ -133,7 +139,26 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.LocalPlayer.ActorNumber)
 				foreach(Penguin penguin in Singleton.GameManager.ClientPenguins)
+				{
+					//if (PhotonView.Find(penguin.CurrentTile).GetComponent<TileView>().CheckAndShowAvailableTiles())
+					//{
+					//	PhotonNetwork.Destroy(PhotonView.Get(penguin));
+					//	Singleton.GameManager.ClientPenguins.Remove(penguin);
+					//}
+
+					//else penguin.Controllable = true;
+
 					penguin.Controllable = true;
+				}
+
+			ResetTiles();
+		}
+
+		if (photonEvent.Code == Singleton.SetTileIndex)
+		{
+			object[] data = (object[])photonEvent.CustomData;
+			TileIndexes[(byte)data[1], (byte)data[2]] = PhotonView.Find((int)data[0]).GetComponent<TileView>();
+			TileIndexes[(byte)data[1], (byte)data[2]].TileIndex = new Vector2Int((byte)data[1], (byte)data[2]);
 		}
 	}
 

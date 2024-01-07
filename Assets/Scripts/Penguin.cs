@@ -19,7 +19,6 @@ public class Penguin : MonoBehaviour
 		}
 	}
 
-
 	[PunRPC]
 	public void JumpToTile(int tileID)
 	{
@@ -52,7 +51,7 @@ public class Penguin : MonoBehaviour
 
 		Singleton.BoardManager.SelectedTile = null;
 
-		PhotonView.Find(CurrentTile).GetComponent<TileView>().ShowAvailableTiles();
+		PhotonView.Find(CurrentTile).GetComponent<TileView>().CheckAndShowAvailableTiles();
 
 		while (true)
 		{
@@ -77,7 +76,7 @@ public class Penguin : MonoBehaviour
 			else yield return new WaitForEndOfFrame();
 		}
 
-		Singleton.BoardManager.ResetTiles();
+		//Singleton.BoardManager.ResetTiles();
 		print("End Control Penguin Coroutine");
 	}
 

@@ -8,8 +8,9 @@ public class TileView : MonoBehaviour
 	private byte amount;
 	private State currentState;
 	private SpriteRenderer spriteRenderer;
-
 	private Coroutine coroutine;
+
+	public Vector2Int TileIndex { get; set; }
 
 	public enum State
 	{
@@ -121,17 +122,114 @@ public class TileView : MonoBehaviour
 		coroutine = StartCoroutine(FloatAnimation());
 	}
 
-	private void ShowHorizontalTiles()
+	private bool CheckAndShowHorizontalTiles()
 	{
-			foreach(TileView tile in Singleton.BoardManager.AllTiles)
+		bool notStuck = false;
+
+		//Check All Available Tiles On The Left
+		for (int y = TileIndex.y + 1; y < Singleton.BoardManager.BoardSize.y; y++)
+		{
+			if (Singleton.BoardManager.TileIndexes[TileIndex.x, y].CurrentState == State.Inactive)
 			{
-				tile.CurrentState = State.Active;
+				Singleton.BoardManager.TileIndexes[TileIndex.x, y].CurrentState = State.Active;
+				notStuck = true;
 			}
+
+			else break;
+		}
+
+		//Check All Available Tiles On The Right
+		for (int y = TileIndex.y - 1; y > (TileIndex.x % 2 == 0 ? -1 : 0); y--)
+		{
+			if (Singleton.BoardManager.TileIndexes[TileIndex.x, y].CurrentState == State.Inactive)
+			{
+				Singleton.BoardManager.TileIndexes[TileIndex.x, y].CurrentState = State.Active;
+				notStuck = true;
+			}
+
+			else break;
+		}
+
+		return notStuck;
 	}
 
-	public void ShowAvailableTiles()
+	private bool CheckAndShowVerticalTiles()
 	{
-		ShowHorizontalTiles();
+		bool notStuck = false;
+		int offsetLeft = 0, offsetRight = 0;
+		bool availableLeft = true, availableRight = true;
+
+		//Check All Available Tiles On Top
+		for (int x = TileIndex.x + 1; x < Singleton.BoardManager.BoardSize.x; x++)
+		{
+			if (x % 2 == 0)
+				offsetRight ++;
+			else offsetLeft ++;
+
+			//Check All Left Diagonal Tiles
+			if (TileIndex.y - offsetRight > (x % 2 == 0 ? -1 : 0) && availableLeft)
+				if (Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState == State.Inactive)
+				{
+						Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState = State.Active;
+						notStuck = true;
+				}
+
+				else availableLeft = false;
+			
+			//Check All Right Diagonal Tiles
+			if (TileIndex.y + offsetLeft < Singleton.BoardManager.BoardSize.y && availableRight)
+				if (Singleton.BoardManager.TileIndexes[x, TileIndex.y + offsetLeft].CurrentState == State.Inactive)
+				{
+					Singleton.BoardManager.TileIndexes[x, TileIndex.y + offsetLeft].CurrentState = State.Active;
+					notStuck = true;
+				}
+				
+				else availableRight = false;
+		}
+
+		availableLeft = true;
+		availableRight = true;
+
+		offsetLeft = 0;
+		offsetRight = 0;
+
+		//Check All Available Tiles On Bottom
+		for (int x = TileIndex.x - 1; x > -1; x--)
+		{
+			if (x % 2 == 0)
+				offsetRight ++;
+			else offsetLeft ++;
+
+			//Check All Left Diagonal Tiles
+			if (TileIndex.y - offsetRight > (x % 2 == 0 ? -1 : 0) && availableLeft)
+				if (Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState == State.Inactive)
+				{
+						Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState = State.Active;
+						notStuck = true;
+				}
+
+				else availableLeft = false;
+			
+			//Check All Right Diagonal Tiles
+			if (TileIndex.y + offsetLeft < Singleton.BoardManager.BoardSize.y && availableRight)
+				if (Singleton.BoardManager.TileIndexes[x, TileIndex.y + offsetLeft].CurrentState == State.Inactive)
+				{
+					Singleton.BoardManager.TileIndexes[x, TileIndex.y + offsetLeft].CurrentState = State.Active;
+					notStuck = true;
+				}
+				
+				else availableRight = false;
+		}
+
+		return notStuck;
+	}
+
+	public bool CheckAndShowAvailableTiles()
+	{
+		bool foundHorizontal = CheckAndShowHorizontalTiles();
+		bool foundVertical = CheckAndShowVerticalTiles();
+
+		return foundHorizontal || foundVertical;
 	}
 
 	public void OnMouseDown()
@@ -142,8 +240,6 @@ public class TileView : MonoBehaviour
 
 	public void OnMouseEnter()
 	{
-		//Highlight = (CurrentState == State.Active) ? true : false;
-
 		if (CurrentState == State.Active)
 		{
 			GetComponent<MeshRenderer>().material.color = Color.red;
