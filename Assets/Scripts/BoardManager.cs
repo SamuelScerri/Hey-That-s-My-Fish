@@ -61,8 +61,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 		else newPenguin = PhotonNetwork.Instantiate("Penguin Red", tile.transform.position, Quaternion.identity).GetComponent<Penguin>();
 
 		newPenguin.CurrentTile = PhotonView.Get(tile).ViewID;
-
-		Singleton.GameManager.ClientPenguins.Add(newPenguin.GetComponent<Penguin>());
+		Singleton.GameManager.ClientPenguins.Add(newPenguin);
 	}
 
 	private IEnumerator ChooseAreaCoroutine()
@@ -117,10 +116,6 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			{
 				AllTiles = FindObjectsOfType<TileView>();
 
-				//foreach(TileView tile in AllTiles)
-				//	if (tile.CurrentState == TileView.State.Active)
-				//		PhotonView.Get(tile).RPC("SetState", RpcTarget.All, TileView.State.Inactive);
-
 				stateDebugger.SetText("Penguin Pawns Ready");
 				Singleton.GameManager.Scores = new int[PhotonNetwork.PlayerList.Length];
 				print("Allocated Score List With Capacity: " + Singleton.GameManager.Scores.Length);
@@ -139,18 +134,9 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.LocalPlayer.ActorNumber)
 				foreach(Penguin penguin in Singleton.GameManager.ClientPenguins)
-				{
-					//if (PhotonView.Find(penguin.CurrentTile).GetComponent<TileView>().CheckAndShowAvailableTiles())
-					//{
-					//	PhotonNetwork.Destroy(PhotonView.Get(penguin));
-					//	Singleton.GameManager.ClientPenguins.Remove(penguin);
-					//}
-
-					//else penguin.Controllable = true;
-
-					penguin.Controllable = true;
-				}
-
+					if (PhotonView.Find(penguin.CurrentTile).GetComponent<TileView>().CheckAndShowAvailableTiles())
+						penguin.Controllable = true;
+			
 			ResetTiles();
 		}
 

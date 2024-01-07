@@ -76,7 +76,7 @@ public class Penguin : MonoBehaviour
 			else yield return new WaitForEndOfFrame();
 		}
 
-		//Singleton.BoardManager.ResetTiles();
+		Singleton.BoardManager.ResetTiles();
 		print("End Control Penguin Coroutine");
 	}
 
