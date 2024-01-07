@@ -27,11 +27,29 @@ public class Penguin : MonoBehaviour
 
 		transform.localEulerAngles = Vector3.down * 90;
 
+		if (PhotonNetwork.IsMasterClient)
+			PhotonView.Find(tileID).RPC("SetState", RpcTarget.AllViaServer, TileView.State.Occupied);
+
 		if (CurrentTile != 0)
+		{
 			StartCoroutine(PhotonView.Find(CurrentTile).GetComponent<TileView>().MoveToScoreHolder((byte) PhotonView.Get(this).OwnerActorNr));
 
-		if (PhotonNetwork.IsMasterClient)
-			PhotonView.Find(tileID).RPC("SetState", RpcTarget.All, TileView.State.Occupied);
+			if (PhotonView.Get(this).IsMine)
+			{
+				bool possibleMovesAvailable = false;
+
+				//Check If Any Of The Player's Penguins Can Move
+				foreach (Penguin penguin in Singleton.GameManager.ClientPenguins)
+					if(PhotonView.Find(penguin.CurrentTile).GetComponent<TileView>().CheckAndShowAvailableTiles())
+						possibleMovesAvailable = true;
+
+				Singleton.BoardManager.ResetTiles();
+
+				if (possibleMovesAvailable)
+					PhotonNetwork.RaiseEvent(Singleton.SwitchPlayerEvent, (byte) (Singleton.GameManager.CurrentPlayerID + 1), new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+				else PhotonNetwork.RaiseEvent(Singleton.EndGameEvent, (byte) (Singleton.GameManager.CurrentPlayerID + 1), new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
+			}
+		}
 
 		currentTile = tileID;
 	}
@@ -39,7 +57,7 @@ public class Penguin : MonoBehaviour
 	public int CurrentTile
 	{
 		get => currentTile;
-		set => PhotonView.Get(this).RPC("JumpToTile", RpcTarget.All, value);
+		set => PhotonView.Get(this).RPC("JumpToTile", RpcTarget.AllViaServer, value);
 	}
 
 	private IEnumerator ControlPenguin()
@@ -59,13 +77,11 @@ public class Penguin : MonoBehaviour
 			{
 				CurrentTile = PhotonView.Get(Singleton.BoardManager.SelectedTile).ViewID;
 				Singleton.BoardManager.SelectedTile = null;
-
-				PhotonNetwork.RaiseEvent(Singleton.SwitchPlayerEvent, (byte) (Singleton.GameManager.CurrentPlayerID + 1), new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 				
 				break;
 			}
 
-			if (Input.GetKeyDown(KeyCode.Space))
+			if (Input.GetKeyDown("space"))
 			{
 				foreach (Penguin penguin in Singleton.GameManager.ClientPenguins)
 					penguin.Controllable = true;
@@ -76,7 +92,6 @@ public class Penguin : MonoBehaviour
 			else yield return new WaitForEndOfFrame();
 		}
 
-		Singleton.BoardManager.ResetTiles();
 		print("End Control Penguin Coroutine");
 	}
 

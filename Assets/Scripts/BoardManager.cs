@@ -140,6 +140,11 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 			ResetTiles();
 		}
 
+		if (photonEvent.Code == Singleton.EndGameEvent)
+		{
+			stateDebugger.SetText("Game Has Ended!");
+		}
+
 		if (photonEvent.Code == Singleton.SetTileIndex)
 		{
 			object[] data = (object[])photonEvent.CustomData;

@@ -170,8 +170,8 @@ public class TileView : MonoBehaviour
 			if (TileIndex.y - offsetRight > (x % 2 == 0 ? -1 : 0) && availableLeft)
 				if (Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState == State.Inactive)
 				{
-						Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState = State.Active;
-						notStuck = true;
+					Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState = State.Active;
+					notStuck = true;
 				}
 
 				else availableLeft = false;
@@ -204,8 +204,8 @@ public class TileView : MonoBehaviour
 			if (TileIndex.y - offsetRight > (x % 2 == 0 ? -1 : 0) && availableLeft)
 				if (Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState == State.Inactive)
 				{
-						Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState = State.Active;
-						notStuck = true;
+					Singleton.BoardManager.TileIndexes[x, TileIndex.y - offsetRight].CurrentState = State.Active;
+					notStuck = true;
 				}
 
 				else availableLeft = false;
@@ -229,7 +229,10 @@ public class TileView : MonoBehaviour
 		bool foundHorizontal = CheckAndShowHorizontalTiles();
 		bool foundVertical = CheckAndShowVerticalTiles();
 
-		return foundHorizontal || foundVertical;
+		if (foundHorizontal || foundVertical)
+			return true;
+
+		else return false;
 	}
 
 	public void OnMouseDown()

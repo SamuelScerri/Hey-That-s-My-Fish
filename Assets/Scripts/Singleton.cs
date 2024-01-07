@@ -7,6 +7,7 @@ public class Singleton : MonoBehaviour
 	public const byte TileUpdateStateEvent = 3;
 	public const byte SwitchPlayerEvent = 4;
 	public const byte SetTileIndex = 5;
+	public const byte EndGameEvent = 6;
 
 	public static Singleton Reference {get; set;}
 	public static GameManager GameManager { get; set; }
