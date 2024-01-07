@@ -26,6 +26,9 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 	{
 		Camera.main.transform.parent.position = new Vector3(boardSize.x * (tileSize.x + tileMargin.x) / 2 - cameraOffset, Camera.main.transform.parent.position.y, boardSize.y * (tileSize.y + tileMargin.y) / 2);	
 		TileIndexes = new TileView[boardSize.x, boardSize.y];
+
+		if (PhotonNetwork.IsMasterClient)
+			StartCoroutine(InitializeBoard());
 	}
 
 	private IEnumerator InitializeBoard()
@@ -99,6 +102,11 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 						TileIndexes[x, y].CurrentState = TileView.State.Inactive;
 	}
 
+	public void EndGame()
+	{
+		stateDebugger.SetText("End Game!");
+	}
+
 	public void OnEvent(EventData photonEvent)
 	{
 		if (photonEvent.Code == Singleton.ChooseAreaEvent)
@@ -132,18 +140,27 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 			stateDebugger.SetText("Player's Turn: " + Singleton.GameManager.CurrentPlayerID);
 
+			
 			if (Singleton.GameManager.CurrentPlayerID == PhotonNetwork.LocalPlayer.ActorNumber)
+			{
+				bool ableToContinue = false;
+
 				foreach(Penguin penguin in Singleton.GameManager.ClientPenguins)
 					if (PhotonView.Find(penguin.CurrentTile).GetComponent<TileView>().CheckAndShowAvailableTiles())
+					{
+						ableToContinue = true;
 						penguin.Controllable = true;
-			
+					}
+
+				if (!ableToContinue)
+					EndGame();
+			}
+						
 			ResetTiles();
 		}
 
 		if (photonEvent.Code == Singleton.EndGameEvent)
-		{
-			stateDebugger.SetText("Game Has Ended!");
-		}
+			EndGame();
 
 		if (photonEvent.Code == Singleton.SetTileIndex)
 		{
@@ -159,9 +176,9 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 		Application.Quit();
 	}
 
-	public override void OnPlayerEnteredRoom(Player newPlayer)
-	{
-		if (PhotonNetwork.IsMasterClient)
-			StartCoroutine(InitializeBoard());
-	}
+	//public override void OnPlayerEnteredRoom(Player newPlayer)
+	//{
+		//if (PhotonNetwork.IsMasterClient)
+			//StartCoroutine(InitializeBoard());
+	//}
 }
