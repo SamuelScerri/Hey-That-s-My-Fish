@@ -5,6 +5,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 {
@@ -102,9 +103,17 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 						TileIndexes[x, y].CurrentState = TileView.State.Inactive;
 	}
 
+	public void EnableAllTiles()
+	{
+		for (byte x = 0; x < boardSize.x; x++)
+			for (byte y = (byte)(x % 2 == 0 ? 0 : 1); y < boardSize.y; y++)
+				if (TileIndexes[x, y] != null)
+					TileIndexes[x, y].CurrentState = TileView.State.Active;
+	}
+
 	public void EndGame()
 	{
-		stateDebugger.SetText("End Game!");
+		Singleton.GameManager.ShowGameOverScreen();
 	}
 
 	public void OnEvent(EventData photonEvent)
@@ -153,7 +162,7 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 					}
 
 				if (!ableToContinue)
-					EndGame();
+					PhotonNetwork.RaiseEvent(Singleton.EndGameEvent, (byte) (Singleton.GameManager.CurrentPlayerID + 1), new RaiseEventOptions { Receivers = ReceiverGroup.All }, SendOptions.SendReliable);
 			}
 						
 			ResetTiles();
@@ -172,13 +181,22 @@ public class BoardManager : MonoBehaviourPunCallbacks, IOnEventCallback
 
 	public override void OnPlayerLeftRoom(Player otherPlayer)
 	{
-		print("Exiting!");
-		Application.Quit();
+		PhotonNetwork.LeaveRoom();
+	}
+
+	public override void OnLeftRoom()
+	{
+		SceneManager.LoadScene("Launcher");
+	}
+
+	public void LeaveGame()
+	{
+		PhotonNetwork.LeaveRoom();
 	}
 
 	//public override void OnPlayerEnteredRoom(Player newPlayer)
 	//{
-		//if (PhotonNetwork.IsMasterClient)
-			//StartCoroutine(InitializeBoard());
+	//if (PhotonNetwork.IsMasterClient)
+	//StartCoroutine(InitializeBoard());
 	//}
 }
